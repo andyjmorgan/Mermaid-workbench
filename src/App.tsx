@@ -15,7 +15,7 @@ import {
 import { Button } from "./components/button";
 import { Textarea } from "./components/textarea";
 import { ChatTurn } from "./components/Chat";
-import { snapshot, applyState, renderError, encodeState } from "./editor";
+import { snapshot, applyState, renderError, encodeState, decodeState } from "./editor";
 import { respond } from "./responses";
 import { companionMessage, editState, fingerprint } from "../shared/agent.mjs";
 import type { Turn, ToolResult, EditorState, OutputItem } from "./types";
@@ -302,18 +302,27 @@ export default function App() {
   }
   async function duplicateDiagram() {
     if (!frame.current) return;
-    // Open synchronously so browser popup protection permits the new tab.
-    const tab = window.open("about:blank", "_blank");
+    // Navigate immediately: a backgrounded source tab can have its snapshot
+    // timers throttled. The duplicate must never depend on them to leave blank.
+    const initialHash = frame.current.contentWindow?.location.hash;
+    if (!initialHash) return;
+    const initialUrl = new URL("/" + initialHash, window.location.origin).href;
+    const tab = window.open(initialUrl, "_blank");
     if (!tab) { setNotice("Allow popups to duplicate the diagram."); return; }
     tab.opener = null;
     try {
       const state = await snapshot(frame.current);
-      tab.location.replace("/#" + encodeState(state));
+      const latestUrl = new URL("/#" + encodeState(state), window.location.origin).href;
+      // Capture input still inside upstream's debounce without reloading an
+      // unchanged copy or navigating a tab the user has already moved away from.
+      const changed = JSON.stringify(state) !== JSON.stringify(decodeState(initialHash));
+      if (!tab.closed && changed && [initialUrl, "about:blank"].includes(tab.location.href))
+        tab.location.replace(latestUrl);
     } catch (error) {
-      tab.close();
       setNotice((error as Error).message);
     }
   }
+
   return (
     <div className="flex h-dvh flex-col bg-background text-foreground">
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-card px-4">
