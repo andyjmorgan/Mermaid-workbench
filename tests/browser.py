@@ -79,7 +79,7 @@ with sync_playwright() as p:
     page.set_viewport_size({'width':390,'height':844})
     page.screenshot(path='/tmp/mermaid-panel-mobile.png',full_page=True)
     assert page.evaluate('document.documentElement.scrollWidth<=window.innerWidth')
-    page.get_by_role('button',name='Hide assistant').click()
+    page.get_by_role('button',name='Back to editor').click()
     expect(page.locator('aside')).to_have_count(0)
     page.get_by_role('button',name='Assistant',exact=True).click()
     expect(page.locator('aside')).to_be_visible()

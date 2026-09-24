@@ -52,7 +52,7 @@ export default function App() {
   const lock = useRef(false);
   const controller = useRef<AbortController | null>(null);
   const [ready, setReady] = useState(false);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => window.innerWidth >= 1024);
   const [dark, setDark] = useState(false);
   const [notice, setNotice] = useState("");
   const [storageWarning, setStorageWarning] = useState(false);
@@ -107,11 +107,21 @@ export default function App() {
         attributeFilter: ["class"],
       });
     }
-    try {
-      await snapshot(frame.current!);
-      setReady(true);
-    } catch (e) {
-      setNotice((e as Error).message);
+    // The iframe load event can precede Mermaid's asynchronous initialization.
+    // Keep trying without covering the editor or requiring a page reload.
+    while (frame.current?.isConnected) {
+      try {
+        await snapshot(frame.current);
+        // Upstream defaults narrow screens to preview. Start in its Edit tab.
+        const viewToggle = frame.current.contentDocument?.querySelector<HTMLButtonElement>(
+          '#editorMode[aria-checked="true"]',
+        );
+        viewToggle?.click();
+        setReady(true);
+        return;
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
   }
   async function send(message = draft) {
@@ -328,7 +338,7 @@ export default function App() {
             aria-controls="ai-panel"
           >
             {open ? <PanelRightClose /> : <PanelRightOpen />}
-            {open ? "Hide assistant" : "Assistant"}
+            {open ? <><span className="lg:hidden">Back to editor</span><span className="hidden lg:inline">Hide assistant</span></> : "Assistant"}
           </Button>
         </div>
       </header>
@@ -346,16 +356,16 @@ export default function App() {
             allow="clipboard-read; clipboard-write"
           />
           {!ready && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background text-sm text-muted-foreground">
+            <div className="pointer-events-none absolute bottom-3 left-3 flex items-center rounded-xl border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
               <Loader2 className="mr-2 size-4 animate-spin" />
-              Loading editor…
+              Connecting assistant to editor…
             </div>
           )}
         </section>
         {open && (
           <aside
             id="ai-panel"
-            className="absolute inset-0 z-10 flex min-w-0 flex-col border-l border-border bg-card md:relative md:inset-auto md:w-[min(420px,38vw)] md:shrink-0"
+            className="absolute inset-0 z-10 flex min-w-0 flex-col border-l border-border bg-card lg:relative lg:inset-auto lg:w-[clamp(320px,28vw,420px)] lg:shrink-0"
             aria-label="Diagram assistant"
           >
             <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
