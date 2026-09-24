@@ -312,7 +312,9 @@ export default function App() {
     tab.opener = null;
     try {
       const state = await snapshot(frame.current);
-      const latestUrl = new URL("/#" + encodeState(state), window.location.origin).href;
+      // A query change forces the wrapper to load the updated iframe state;
+      // a hash-only navigation would leave its initial iframe src unchanged.
+      const latestUrl = new URL("/?duplicate=1#" + encodeState(state), window.location.origin).href;
       // Capture input still inside upstream's debounce without reloading an
       // unchanged copy or navigating a tab the user has already moved away from.
       const changed = JSON.stringify(state) !== JSON.stringify(decodeState(initialHash));
