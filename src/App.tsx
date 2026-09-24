@@ -3,6 +3,7 @@ import {
   Bubbles,
   Plus,
   Copy,
+  Share2,
   Send,
   Square,
   RotateCcw,
@@ -324,10 +325,15 @@ export default function App() {
         </div>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" disabled={!ready} onClick={newDiagram}>
-            <Plus /> New
+            <Plus className="hidden sm:block" /> New
           </Button>
           <Button variant="ghost" size="sm" disabled={!ready} onClick={() => void duplicateDiagram()}>
-            <Copy /> Duplicate
+            <Copy className="hidden sm:block" /> Duplicate
+          </Button>
+          <Button variant="ghost" size="sm" disabled={!ready} onClick={() => {
+            frame.current?.contentDocument?.querySelector<HTMLButtonElement>("[data-workspace-share] button")?.click();
+          }}>
+            <Share2 className="hidden sm:block" /> Share
           </Button>
           <Button
             variant="ghost"

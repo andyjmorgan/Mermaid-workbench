@@ -160,7 +160,7 @@ index 6d691f7d..d78737ee 100644
    </div>
    {@render mobileToggle?.()}
 diff --git a/src/lib/components/Share.svelte b/src/lib/components/Share.svelte
-index a2e27e9a..5e8af96e 100644
+index a2e27e9a..661532c6 100644
 --- a/src/lib/components/Share.svelte
 +++ b/src/lib/components/Share.svelte
 @@ -9,7 +9,7 @@
@@ -172,9 +172,14 @@ index a2e27e9a..5e8af96e 100644
    import { copyToClipboard } from '$/util/util';
    import { asset, base } from '$app/paths';
    import CodeIcon from '~icons/material-symbols/code';
-@@ -67,9 +67,9 @@
-           <img class="size-5" src={asset('/favicon.svg')} alt="Mermaid Live Editor" />
-           Mermaid Live Editor
+@@ -64,12 +64,12 @@
+     <div class="flex flex-col gap-4">
+       <div class="flex flex-col gap-2">
+         <h2 class="flex items-center gap-2">
+-          <img class="size-5" src={asset('/favicon.svg')} alt="Mermaid Live Editor" />
+-          Mermaid Live Editor
++          <img class="size-5" src={asset('/favicon.svg')} alt="Mermaid workspace" />
++          Mermaid workspace
          </h2>
 -        <CopyInput value={window.location.href} />
 +        <CopyInput value={urls.current.workspace} />
@@ -199,18 +204,107 @@ index 2ae5b1fc..f495bc67 100644
        medium,
        campaign
 diff --git a/src/routes/(app)/edit/+page.svelte b/src/routes/(app)/edit/+page.svelte
-index 6dcde296..a8f51d23 100644
+index 6dcde296..9a5a376d 100644
 --- a/src/routes/(app)/edit/+page.svelte
 +++ b/src/routes/(app)/edit/+page.svelte
-@@ -1,7 +1,6 @@
+@@ -1,36 +1,26 @@
  <script lang="ts">
    import Actions from '$/components/Actions.svelte';
    import Card from '$/components/Card/Card.svelte';
 -  import DiagramDocButton from '$/components/DiagramDocumentationButton.svelte';
    import Editor from '$/components/Editor.svelte';
    import EnhancedEditsButton from '$/components/EnhancedEditsButton.svelte';
-   import History from '$/components/History/History.svelte';
-@@ -141,9 +140,6 @@
+-  import History from '$/components/History/History.svelte';
+   import { startAutoSave } from '$/components/History/historyState.svelte';
+-  import McWrapper from '$/components/McWrapper.svelte';
+-  import MermaidChartIcon from '$/components/MermaidChartIcon.svelte';
+   import EditorChooserModal from '$/components/migration/EditorChooserModal.svelte';
+-  import Navbar from '$/components/Navbar.svelte';
+   import PanZoomToolbar from '$/components/PanZoomToolbar.svelte';
+   import Preset from '$/components/Preset.svelte';
+   import Share from '$/components/Share.svelte';
+   import SyncRoughToolbar from '$/components/SyncRoughToolbar.svelte';
+-  import { Button } from '$/components/ui/button';
+-  import { Separator } from '$/components/ui/separator';
+   import * as Resizable from '$/components/ui/resizable';
+   import { Switch } from '$/components/ui/switch';
+-  import { Toggle } from '$/components/ui/toggle';
+   import VersionSecurityToolbar from '$/components/VersionSecurityToolbar.svelte';
+   import View from '$/components/View.svelte';
+   import type { EditorMode, Tab } from '$/types';
+   import { shouldShowEditorChooser } from '$/util/migration/domainMigration';
+   import { PanZoomState } from '$/util/panZoom';
+-  import { env } from '$/util/env';
+   import { validatedState, updateCodeStore, urls } from '$/util/state.svelte';
+-  import { logEvent, logMermaidChartClick } from '$/util/stats';
+-  import { getContactSalesUrl, initHandler } from '$/util/util';
++  import { logEvent } from '$/util/stats';
++  import { initHandler } from '$/util/util';
+   import { onMount } from 'svelte';
+   import CodeIcon from '~icons/custom/code';
+-  import HistoryIcon from '~icons/material-symbols/history';
+   import GearIcon from '~icons/material-symbols/settings-outline-rounded';
+ 
+   const panZoomState = new PanZoomState();
+@@ -69,7 +59,6 @@
+   // Record the Timeline for the whole session, not just while the panel is open.
+   onMount(() => startAutoSave());
+ 
+-  let isHistoryOpen = $state(false);
+ 
+   let editorPane: Resizable.Pane | undefined;
+   $effect(() => {
+@@ -79,7 +68,8 @@
+   });
+ </script>
+ 
+-<div class="flex h-full flex-col overflow-hidden">
++<div class="flex h-full flex-col overflow-hidden" data-new-diagram-url={urls.current.new}>
++  <div class="hidden" data-workspace-share><Share /></div>
+   {#snippet mobileToggle()}
+     <div class="flex items-center gap-2">
+       Edit <Switch
+@@ -92,36 +82,9 @@
+     </div>
+   {/snippet}
+ 
+-  <Navbar mobileToggle={isMobile ? mobileToggle : undefined}>
+-    <Toggle bind:pressed={isHistoryOpen} size="sm" title="History" aria-label="History">
+-      <HistoryIcon />
+-    </Toggle>
+-    <Share />
+-    {#if env.isEnabledMermaidChartLinks}
+-      <Separator orientation="vertical" />
+-      <McWrapper labelPrefix="Opens ">
+-        <Button
+-          size="sm"
+-          href={getContactSalesUrl()}
+-          target="_blank"
+-          onclick={() => logMermaidChartClick('contactSales')}>
+-          <MermaidChartIcon />
+-          Contact sales
+-        </Button>
+-      </McWrapper>
+-      <McWrapper>
+-        <Button
+-          variant="accent"
+-          size="sm"
+-          href={urls.current.mermaidChart({ medium: 'save_diagram' }).save}
+-          target="_blank"
+-          onclick={() => logMermaidChartClick('saveDiagram')}>
+-          <MermaidChartIcon />
+-          Save diagram
+-        </Button>
+-      </McWrapper>
+-    {/if}
+-  </Navbar>
++  {#if isMobile}
++    <div class="flex justify-end px-4 py-2">{@render mobileToggle()}</div>
++  {/if}
+ 
+   <div class="flex flex-1 flex-col overflow-hidden" bind:clientWidth={width}>
+     <div
+@@ -141,9 +104,6 @@
                tabs={editorTabs}
                activeTabID={validatedState.current.editorMode}
                isClosable={false}>
@@ -220,3 +314,16 @@ index 6dcde296..a8f51d23 100644
                <Editor {isMobile} />
              </Card>
  
+@@ -163,12 +123,6 @@
+           <div class="absolute right-0 bottom-0"><VersionSecurityToolbar /></div>
+           <div class="absolute bottom-0 left-0 sm:left-5"><SyncRoughToolbar /></div>
+         </Resizable.Pane>
+-        {#if isHistoryOpen}
+-          <Resizable.Handle class="ml-1 hidden opacity-0 sm:block" />
+-          <Resizable.Pane minSize={15} defaultSize={30} class="hidden h-full grow flex-col sm:flex">
+-            <History />
+-          </Resizable.Pane>
+-        {/if}
+       </Resizable.PaneGroup>
+     </div>
+   </div>
