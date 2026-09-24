@@ -244,22 +244,7 @@ export function ChatTurn({
           </span>
           <CopyButton text={turn.text || ""} />
         </div>
-        {turn.snapshot && (
-          <div className="w-full">
-            <Detail
-              title="Diagram sent with this message"
-              icon={<Wrench className="size-3.5" />}
-            >
-              <Fields
-                label="Context"
-                raw={JSON.stringify({
-                  code: turn.snapshot.code,
-                  config: turn.snapshot.mermaid,
-                })}
-              />
-            </Detail>
-          </div>
-        )}
+
       </article>
     );
   const text = (turn.items || [])
