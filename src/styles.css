@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* DonkeyWork Design System - Light Mode */
+  :root {
+    /* Backgrounds: #ffffff, #f8fafc, #f1f5f9, #e2e8f0 */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 210 40% 98%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary button: gradient cyan-to-blue, white text */
+    --primary: 187 86% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    /* User chat: darker blue for light mode readability */
+    --user-chat: 210 70% 45%;
+    --user-chat-foreground: 0 0% 100%;
+
+    /* Secondary: #f8fafc bg, dark text */
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Muted: #f1f5f9 bg, #64748b text */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent (cyan): #0891b2 */
+    --accent: 192 91% 37%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive: red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Success: emerald #10b981 */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning: amber #f59e0b */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Borders: #e2e8f0 */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 192 91% 37%;
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 192 91% 37%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 192 91% 37%;
+  }
+
+  /* DonkeyWork Design System - Dark Mode */
+  .dark {
+    /* Backgrounds: #0a0d12, #0f1318, #151a21, #1a2028 */
+    --background: 216 28% 5%;
+    --foreground: 0 0% 100%;
+    --card: 216 23% 7%;
+    --card-foreground: 0 0% 100%;
+    --popover: 216 20% 10%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary button: gradient cyan-to-blue, white text */
+    --primary: 187 86% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    /* User chat: same as primary in dark mode */
+    --user-chat: 210 70% 50%;
+    --user-chat-foreground: 0 0% 100%;
+
+    /* Secondary: #151a21 bg, light text */
+    --secondary: 216 20% 11%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted: #1a2028 bg, #94a3b8 text */
+    --muted: 216 17% 13%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Accent (cyan): #22d3ee */
+    --accent: 187 86% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive: red */
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Success: emerald #10b981 */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning: amber #f59e0b */
+    --warning: 38 92% 50%;
+    --warning-foreground: 216 28% 5%;
+
+    /* Borders: very subtle, barely visible in dark mode */
+    --border: 220 13% 12%;
+    --input: 220 13% 14%;
+    --ring: 187 86% 53%;
+
+    /* Sidebar */
+    --sidebar-background: 216 28% 5%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 187 86% 53%;
+    --sidebar-primary-foreground: 216 28% 5%;
+    --sidebar-accent: 216 20% 11%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.08;
+    --sidebar-ring: 187 86% 53%;
+  }
+}
+
+:root {
+  --thinking: 271 65% 45%;
+}
+.dark {
+  --thinking: 270 95% 75%;
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    margin: 0;
+    min-width: 320px;
+  }
+  button,
+  summary {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible,
+  summary:focus-visible,
+  a:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
+}
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+pre,
+code {
+  font-family: "JetBrains Mono", monospace;
+}
+summary {
+  list-style: none;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+.chat-prose {
+  overflow-wrap: anywhere;
+}
+.chat-prose pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chat-prose p:first-child {
+  margin-top: 0;
+}
+.chat-prose p:last-child {
+  margin-bottom: 0;
+}
+.chat-prose a {
+  color: hsl(var(--accent));
+}
+.chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
