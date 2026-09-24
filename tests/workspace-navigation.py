@@ -6,26 +6,25 @@ with sync_playwright() as p:
  b=p.chromium.launch()
  page=b.new_page(viewport={'width':1680,'height':1050})
  page.goto(URL,wait_until='networkidle')
- expect(page.get_by_role('button',name='Toggle theme')).to_be_enabled(timeout=45000)
+ expect(page.get_by_role('button',name='New',exact=True)).to_be_enabled(timeout=45000)
  f=page.frame_locator('iframe')
  expect(f.get_by_role('link',name='Docs',exact=True)).to_have_count(0)
  f.locator('.monaco-editor .view-line').first.hover()
  expect(f.locator('.suggestion-icon')).to_have_count(0)
- f.locator('nav button').first.click()
  for name in ['Documentation','Community','Mermaid.js','Edit in Playground','Plugins']:
   expect(f.get_by_role('link',name=name,exact=True)).to_have_count(0)
  with page.expect_popup() as popup:
-  f.get_by_role('link',name='New',exact=True).click()
+  page.get_by_role('button',name='New',exact=True).click()
  new=popup.value
  new.wait_for_load_state('networkidle')
- expect(new.get_by_text('Diagram workspace',exact=True)).to_be_visible()
+ expect(new.get_by_text('Mermaid workspace',exact=True)).to_be_visible()
  assert urlsplit(new.url).path=='/'
  new.close()
  with page.expect_popup() as popup:
-  f.get_by_role('link',name='Duplicate',exact=True).click()
+  page.get_by_role('button',name='Duplicate',exact=True).click()
  duplicate=popup.value
  duplicate.wait_for_load_state('networkidle')
- expect(duplicate.get_by_text('Diagram workspace',exact=True)).to_be_visible()
+ expect(duplicate.get_by_text('Mermaid workspace',exact=True)).to_be_visible()
  assert urlsplit(duplicate.url).path=='/' and urlsplit(duplicate.url).fragment
  duplicate.close()
  page.keyboard.press('Escape')

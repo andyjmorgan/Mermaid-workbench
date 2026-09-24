@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Bubbles,
+  Plus,
+  Copy,
   Send,
   Square,
   RotateCcw,
   PanelRightClose,
   PanelRightOpen,
-  Sun,
-  Moon,
   GitBranch,
   Loader2,
 } from "lucide-react";
 import { Button } from "./components/button";
 import { Textarea } from "./components/textarea";
 import { ChatTurn } from "./components/Chat";
-import { snapshot, applyState, renderError, decodeState } from "./editor";
+import { snapshot, applyState, renderError, encodeState } from "./editor";
 import { respond } from "./responses";
 import { companionMessage, editState, fingerprint } from "../shared/agent.mjs";
 import type { Turn, ToolResult, EditorState, OutputItem } from "./types";
@@ -294,29 +294,40 @@ export default function App() {
     persist([]);
     setNotice("");
   }
-  function theme() {
-    frame.current?.contentDocument
-      ?.querySelector<HTMLButtonElement>('[data-testid="theme-toggle-button"]')
-      ?.click();
+  function newDiagram() {
+    const url = frame.current?.contentDocument
+      ?.querySelector<HTMLElement>("[data-new-diagram-url]")?.dataset.newDiagramUrl;
+    if (url) window.open("/" + url.slice(url.indexOf("#")), "_blank", "noopener,noreferrer");
+  }
+  async function duplicateDiagram() {
+    if (!frame.current) return;
+    // Open synchronously so browser popup protection permits the new tab.
+    const tab = window.open("about:blank", "_blank");
+    if (!tab) { setNotice("Allow popups to duplicate the diagram."); return; }
+    tab.opener = null;
+    try {
+      const state = await snapshot(frame.current);
+      tab.location.replace("/#" + encodeState(state));
+    } catch (error) {
+      tab.close();
+      setNotice((error as Error).message);
+    }
   }
   return (
     <div className="flex h-dvh flex-col bg-background text-foreground">
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-card px-4">
         <div className="flex min-w-0 items-center gap-2">
           <GitBranch className="size-4 text-accent" />
-          <span className="truncate text-sm font-semibold">
-            Diagram workspace
+          <span className="hidden truncate text-sm font-semibold sm:inline">
+            Mermaid workspace
           </span>
         </div>
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Toggle theme"
-            disabled={!ready}
-            onClick={theme}
-          >
-            {dark ? <Sun /> : <Moon />}
+          <Button variant="ghost" size="sm" disabled={!ready} onClick={newDiagram}>
+            <Plus /> New
+          </Button>
+          <Button variant="ghost" size="sm" disabled={!ready} onClick={() => void duplicateDiagram()}>
+            <Copy /> Duplicate
           </Button>
           <Button
             variant="ghost"
@@ -354,7 +365,7 @@ export default function App() {
           <aside
             id="ai-panel"
             className="absolute inset-0 z-10 flex min-w-0 flex-col border-l border-border bg-card lg:relative lg:inset-auto lg:w-[clamp(320px,28vw,420px)] lg:shrink-0"
-            aria-label="Diagram assistant"
+            aria-label="Mermaid assistant"
           >
             <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
               <div className="flex items-center gap-3">
@@ -362,10 +373,7 @@ export default function App() {
                   <Bubbles className="size-5" />
                 </div>
                 <div>
-                  <h1 className="text-sm font-semibold">Diagram assistant</h1>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Gemma on Spark
-                  </p>
+                  <h1 className="text-sm font-semibold">Mermaid assistant</h1>
                 </div>
               </div>
               <Button

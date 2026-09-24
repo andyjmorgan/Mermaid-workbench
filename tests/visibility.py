@@ -5,7 +5,7 @@ with sync_playwright() as p:
  for w,h in [(1440,900),(1024,768),(768,1024),(390,844)]:
   page=b.new_page(viewport={'width':w,'height':h})
   page.goto(os.environ.get('WORKSPACE_URL', 'http://127.0.0.1:31473'),wait_until='networkidle')
-  expect(page.get_by_role('button',name='Toggle theme')).to_be_enabled(timeout=45000)
+  expect(page.get_by_role('button',name='New',exact=True)).to_be_enabled(timeout=45000)
   f=page.frame_locator('iframe')
   editor=f.locator('.monaco-editor' if w>=640 else '.cm-editor').first
   expect(editor).to_be_visible()

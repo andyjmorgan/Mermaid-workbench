@@ -91,25 +91,29 @@ index c8c08fab..2a1261e3 100644
  
  {#snippet menuItem(options: Omit<MenuItem, 'renderer'>)}
 diff --git a/src/lib/components/Navbar.svelte b/src/lib/components/Navbar.svelte
-index 6d691f7d..bc7fd1b8 100644
+index 6d691f7d..d78737ee 100644
 --- a/src/lib/components/Navbar.svelte
 +++ b/src/lib/components/Navbar.svelte
-@@ -11,13 +11,10 @@
-   import { resolve } from '$app/paths';
-   import MainMenu from '$/components/MainMenu.svelte';
+@@ -8,16 +8,11 @@
+ </script>
+ 
+ <script lang="ts">
+-  import { resolve } from '$app/paths';
+-  import MainMenu from '$/components/MainMenu.svelte';
++  import { urls } from '$/util/state.svelte';
    import { Button } from '$/components/ui/button';
 -  import { Separator } from '$/components/ui/separator';
    import { dismissPromotion, getActivePromotion } from '$lib/util/promos/promo.svelte';
 -  import { untrack, type ComponentProps, type Snippet } from 'svelte';
+-  import MermaidIcon from '~icons/custom/mermaid';
 +  import { untrack, type Snippet } from 'svelte';
-   import MermaidIcon from '~icons/custom/mermaid';
    import CloseIcon from '~icons/material-symbols/close-rounded';
 -  import GithubIcon from '~icons/mdi/github';
 -  import DropdownNavMenu from './DropdownNavMenu.svelte';
  
    interface Props {
      mobileToggle?: Snippet;
-@@ -27,20 +24,6 @@
+@@ -27,20 +22,6 @@
  
    let { children, mobileToggle, hidePromotion = false }: Props = $props();
  
@@ -130,12 +134,28 @@ index 6d691f7d..bc7fd1b8 100644
    let activePromotion = $state(untrack(() => (hidePromotion ? undefined : getActivePromotion())));
  
    const trackBannerClick = () => {
-@@ -94,8 +77,6 @@
+@@ -80,22 +61,10 @@
+   </div>
+ {/if}
+ 
+-<nav class="z-50 flex p-4 sm:p-6">
+-  <div class="flex flex-1 items-center gap-2">
+-    <MainMenu />
+-    <MermaidIcon class="size-6" />
+-    <a href={resolve('/', {})} class="whitespace-nowrap text-accent">
+-      {#if !mobileToggle}
+-        Mermaid
+-      {/if}
+-      Live Editor
+-    </a>
+-  </div>
++<nav class="z-50 flex items-center justify-between gap-3 px-4 py-2 sm:px-6" data-new-diagram-url={urls.current.new}>
    <div
      id="menu"
-     class="hidden flex-nowrap items-center justify-between gap-3 overflow-hidden md:flex">
+-    class="hidden flex-nowrap items-center justify-between gap-3 overflow-hidden md:flex">
 -    <DropdownNavMenu icon={GithubIcon} links={githubLinks} />
 -    <Separator orientation="vertical" />
++    class="flex flex-nowrap items-center gap-3">
      {@render children()}
    </div>
    {@render mobileToggle?.()}

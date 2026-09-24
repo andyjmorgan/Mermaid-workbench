@@ -4,7 +4,7 @@ An AI sidebar around Mermaid Live Editor at https://mermaid.donkeywork.dev. Top-
 
 ## Behavior
 
-- React parent page embeds the existing editor in a same-origin iframe. A small upstream patch removes promotional navigation and the gutter AI prompt, and makes New, Duplicate and shared editing links open the workspace.
+- React parent page embeds the existing editor in a same-origin iframe. A small upstream patch removes promotional navigation, the hamburger/Live Editor branding and the gutter AI prompt. New and Duplicate live in the workspace header; shared editing links open the workspace. The canvas theme control also updates the assistant theme.
 - Reads the editor's `pako:` / `base64:` URL state after its 250ms debounce and a quiet input interval. This includes manual code and config edits, even when the diagram has a syntax error. It does not use the cross-tab `codeStore` for context.
 - Every user message is a Responses input message whose JSON content contains `user_message`, `current_code`, and `current_config`. Earlier turns retain their original snapshots.
 - Gemma (`gemma4:26b`) on the Spark receives the server-owned system prompt and `edit_code` / `edit_config` tools. It uses native OpenAI Responses streaming, including thinking, function calls, and function-call outputs.

@@ -68,7 +68,7 @@ with sync_playwright() as p:
     assert json.loads(latest['current_config'])['theme']=='forest'
     assert len([i for i in seen[-1]['input'] if i.get('role')=='user'])==2
     print('PASS live manual context, both tools, copy fields, session reload, multi-turn history')
-    page.get_by_role('button',name='Toggle theme').click()
+    page.frame_locator('iframe').get_by_test_id('theme-toggle-button').click()
     page.wait_for_function("document.documentElement.classList.contains('dark')")
     page.wait_for_timeout(300)
     textarea=page.get_by_role('textbox',name='Message to Gemma')
