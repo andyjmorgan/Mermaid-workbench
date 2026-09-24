@@ -8,6 +8,7 @@ const root = resolve(fileURLToPath(new URL("../dist", import.meta.url)));
 const editorOrigin = process.env.EDITOR_ORIGIN || "http://127.0.0.1:8080";
 const ollamaOrigin = process.env.OLLAMA_ORIGIN || "http://192.168.69.28:11434";
 const publicOrigin = process.env.PUBLIC_ORIGIN;
+const rendererOrigin = process.env.RENDERER_ORIGIN || "http://mermaid-renderer:3000";
 const types = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -33,6 +34,11 @@ export const server = http.createServer(async (req, res) => {
       Location: "/edit" + url.search,
       "Cache-Control": "no-store",
     });
+    res.end();
+    return;
+  }
+  if (url.pathname === "/edit" && req.headers["sec-fetch-dest"] === "document") {
+    res.writeHead(302, { Location: "/" + url.search, "Cache-Control": "no-store" });
     res.end();
     return;
   }
@@ -164,24 +170,30 @@ export const server = http.createServer(async (req, res) => {
     return;
   }
   // Keep the pinned, unmodified editor at its native paths (including shared links).
-  const target = new URL(editorOrigin);
+  const rendering = url.pathname.startsWith("/render/");
+  if (rendering && (!/^\/render\/(img|svg)\/[^/]+$/.test(url.pathname) || !["GET", "HEAD"].includes(req.method)))
+    return json(res, 404, { error: { message: "Unknown image endpoint." } });
+  const target = new URL(rendering ? rendererOrigin : editorOrigin);
   const upstream = http.request(
     {
       hostname: target.hostname,
       port: target.port || 80,
-      path: req.url,
+      path: rendering ? req.url.slice("/render".length) : req.url,
       method: req.method,
-      headers: { ...req.headers, host: target.host },
+      headers: rendering
+        ? { host: target.host, accept: req.headers.accept || "*/*" }
+        : { ...req.headers, host: target.host },
     },
     (r) => {
       res.writeHead(r.statusCode || 502, r.headers);
       r.pipe(res);
     },
   );
+  upstream.setTimeout(60000, () => upstream.destroy(new Error("Upstream timed out")));
   upstream.on("error", () => {
     if (!res.headersSent)
       json(res, 502, {
-        error: { message: "Editor is starting. Reload in a moment." },
+        error: { message: rendering ? "Image renderer is unavailable. Try again shortly." : "Editor is starting. Reload in a moment." },
       });
     else res.destroy();
   });

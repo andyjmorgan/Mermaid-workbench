@@ -4,6 +4,11 @@ import http from "node:http";
 import { once } from "node:events";
 const seen = [];
 const mock = http.createServer(async (req, res) => {
+  if (req.url.startsWith("/svg/")) {
+    res.writeHead(200, { "Content-Type": "image/svg+xml" });
+    res.end(JSON.stringify({ path: req.url, cookie: req.headers.cookie }));
+    return;
+  }
   let raw = "";
   for await (const chunk of req) raw += chunk;
   seen.push(JSON.parse(raw));
@@ -15,6 +20,7 @@ const mock = http.createServer(async (req, res) => {
 mock.listen(0, "127.0.0.1");
 await once(mock, "listening");
 process.env.OLLAMA_ORIGIN = `http://127.0.0.1:${mock.address().port}`;
+process.env.RENDERER_ORIGIN = process.env.OLLAMA_ORIGIN;
 process.env.PUBLIC_ORIGIN = "https://mermaid.donkeywork.dev";
 const { server } = await import("../server/index.mjs");
 server.listen(0, "127.0.0.1");
@@ -98,4 +104,21 @@ test("upstream home links stay in the editor when navigated inside an iframe", a
   assert.equal(response.status, 302);
   assert.equal(response.headers.get("location"), "/edit");
   await response.text();
+});
+
+test("standalone editing links redirect to the workspace while preserving queries", async () => {
+  const response = await fetch(origin + "/edit?gist=example", {
+    headers: { "Sec-Fetch-Dest": "document" }, redirect: "manual",
+  });
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.get("location"), "/?gist=example");
+});
+test("image URLs use the configured renderer without forwarding browser cookies", async () => {
+  const response = await fetch(origin + "/render/svg/pako:example?bgColor=white", {
+    headers: { Cookie: "private=example" },
+  });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /image\/svg/);
+  assert.deepEqual(await response.json(), { path: "/svg/pako:example?bgColor=white" });
+  assert.equal((await fetch(origin + "/render/other")).status, 404);
 });

@@ -1,0 +1,202 @@
+diff --git a/src/lib/components/DesktopEditor.svelte b/src/lib/components/DesktopEditor.svelte
+index b3c52ece..791f883c 100644
+--- a/src/lib/components/DesktopEditor.svelte
++++ b/src/lib/components/DesktopEditor.svelte
+@@ -58,7 +58,7 @@
+ 
+   const renderAIPromptGutterGlyphIcon = () => {
+     decorationsCollection?.clear();
+-    if (!editor || showPopup) {
++    if (!env.isEnabledMermaidChartLinks || !editor || showPopup) {
+       return;
+     }
+     const model = editor.getModel();
+@@ -86,7 +86,7 @@
+   };
+ 
+   const toggleAIPopup = (lineNumber: number) => {
+-    if (!divElement || !aiPromptPopupElement) return;
++    if (!env.isEnabledMermaidChartLinks || !divElement || !aiPromptPopupElement) return;
+     popupPosition = {
+       top: 0,
+       lineNumber
+diff --git a/src/lib/components/MainMenu.svelte b/src/lib/components/MainMenu.svelte
+index c8c08fab..2a1261e3 100644
+--- a/src/lib/components/MainMenu.svelte
++++ b/src/lib/components/MainMenu.svelte
+@@ -32,61 +32,11 @@
+   }
+ 
+   const menuItems: MenuItem[] = $derived([
+-    { label: 'New', icon: AddIcon, href: urls.current.new, renderer: menuItem },
+-    { label: 'Duplicate', icon: DuplicateIcon, href: window.location.href, renderer: menuItem },
+-    {
+-      href: urls.current.mermaidChart({ medium: 'main_menu' }).playground,
+-      icon: PlaygroundIcon,
+-      isSectionEnd: true,
+-      label: 'Edit in Playground',
+-      onclick: () => logMermaidChartClick('editInPlayground'),
+-      renderer: mcMenuItem
+-    },
+-    {
+-      label: 'Mermaid.js',
+-      icon: MermaidTailIcon,
+-      href: env.docsUrl,
+-      renderer: menuItem
+-    },
+-    {
+-      label: 'Documentation',
+-      icon: BookIcon,
+-      href: `${env.docsUrl}/intro/`,
+-      renderer: menuItem
+-    },
+-    {
+-      label: 'Community',
+-      icon: CommunityIcon,
+-      href: 'https://discord.gg/sKeNQX4Wtj',
+-      renderer: menuItem
+-    },
+-    {
+-      checkDiagramType: false,
+-      href: urls.current.mermaidChart({ medium: 'main_menu' }).plugins,
+-      icon: PluginIcon,
+-      label: 'Plugins',
+-      onclick: () => logMermaidChartClick('plugins'),
+-      renderer: mcMenuItem,
+-      sharesData: false
+-    },
+-    {
+-      href: '#',
+-      icon: ContrastIcon,
+-      isSectionEnd: true,
+-      label: 'Dark Mode',
+-      renderer: darkModeMenuItem
+-    },
+-    {
+-      checkDiagramType: false,
+-      class: 'text-accent border-b-0',
+-      href: urls.current.mermaidChart({ medium: 'main_menu' }).home,
+-      icon: MermaidChartIcon,
+-      label: 'Mermaid',
+-      onclick: () => logMermaidChartClick('mermaidHome'),
+-      renderer: mcMenuItem,
+-      sharesData: false
+-    }
++    { label: 'New', icon: AddIcon, href: urls.current.new.replace('/edit#', '/#'), renderer: menuItem },
++    { label: 'Duplicate', icon: DuplicateIcon, href: urls.current.workspace, renderer: menuItem },
++    { href: '#', icon: ContrastIcon, label: 'Dark Mode', renderer: darkModeMenuItem }
+   ]);
++
+ </script>
+ 
+ {#snippet menuItem(options: Omit<MenuItem, 'renderer'>)}
+diff --git a/src/lib/components/Navbar.svelte b/src/lib/components/Navbar.svelte
+index 6d691f7d..bc7fd1b8 100644
+--- a/src/lib/components/Navbar.svelte
++++ b/src/lib/components/Navbar.svelte
+@@ -11,13 +11,10 @@
+   import { resolve } from '$app/paths';
+   import MainMenu from '$/components/MainMenu.svelte';
+   import { Button } from '$/components/ui/button';
+-  import { Separator } from '$/components/ui/separator';
+   import { dismissPromotion, getActivePromotion } from '$lib/util/promos/promo.svelte';
+-  import { untrack, type ComponentProps, type Snippet } from 'svelte';
++  import { untrack, type Snippet } from 'svelte';
+   import MermaidIcon from '~icons/custom/mermaid';
+   import CloseIcon from '~icons/material-symbols/close-rounded';
+-  import GithubIcon from '~icons/mdi/github';
+-  import DropdownNavMenu from './DropdownNavMenu.svelte';
+ 
+   interface Props {
+     mobileToggle?: Snippet;
+@@ -27,20 +24,6 @@
+ 
+   let { children, mobileToggle, hidePromotion = false }: Props = $props();
+ 
+-  type Links = ComponentProps<typeof DropdownNavMenu>['links'];
+-
+-  const githubLinks: Links = [
+-    { title: 'Mermaid JS', href: 'https://github.com/mermaid-js/mermaid' },
+-    {
+-      title: 'Mermaid Live Editor',
+-      href: 'https://github.com/mermaid-js/mermaid-live-editor'
+-    },
+-    {
+-      title: 'Mermaid CLI',
+-      href: 'https://github.com/mermaid-js/mermaid-cli'
+-    }
+-  ];
+-
+   let activePromotion = $state(untrack(() => (hidePromotion ? undefined : getActivePromotion())));
+ 
+   const trackBannerClick = () => {
+@@ -94,8 +77,6 @@
+   <div
+     id="menu"
+     class="hidden flex-nowrap items-center justify-between gap-3 overflow-hidden md:flex">
+-    <DropdownNavMenu icon={GithubIcon} links={githubLinks} />
+-    <Separator orientation="vertical" />
+     {@render children()}
+   </div>
+   {@render mobileToggle?.()}
+diff --git a/src/lib/components/Share.svelte b/src/lib/components/Share.svelte
+index a2e27e9a..5e8af96e 100644
+--- a/src/lib/components/Share.svelte
++++ b/src/lib/components/Share.svelte
+@@ -9,7 +9,7 @@
+   import { isDarkTheme, type EmbedMode } from '$/util/embed';
+   import { EMBED_IFRAME_SANDBOX, buildEmbedSnippets, buildEmbedUrls } from '$/util/embedCode';
+   import { silentlySanitizeConfig } from '$/util/sanitize';
+-  import { validatedState } from '$/util/state.svelte';
++  import { urls, validatedState } from '$/util/state.svelte';
+   import { copyToClipboard } from '$/util/util';
+   import { asset, base } from '$app/paths';
+   import CodeIcon from '~icons/material-symbols/code';
+@@ -67,9 +67,9 @@
+           <img class="size-5" src={asset('/favicon.svg')} alt="Mermaid Live Editor" />
+           Mermaid Live Editor
+         </h2>
+-        <CopyInput value={window.location.href} />
++        <CopyInput value={urls.current.workspace} />
+         <Dialog.Description>
+-          The content of the diagrams you create never leaves your browser.
++          The link includes your diagram and configuration.
+         </Dialog.Description>
+       </div>
+       <Separator />
+diff --git a/src/lib/util/state.svelte.ts b/src/lib/util/state.svelte.ts
+index 2ae5b1fc..f495bc67 100644
+--- a/src/lib/util/state.svelte.ts
++++ b/src/lib/util/state.svelte.ts
+@@ -154,7 +154,8 @@ const urlsCurrent = $derived.by(() => {
+   const png = rendererUrl ? `${rendererUrl}/img/${serialized}?type=png` : '';
+   return {
+     kroki: krokiRendererUrl ? `${krokiRendererUrl}/mermaid/svg/${pakoSerde.serialize(code)}` : '',
+-    mdCode: png ? `[![](${png})](${window.location.href})` : '',
++    mdCode: png ? `[![](${png})](${window.location.origin}/#${serialized})` : '',
++    workspace: `${window.location.origin}/#${serialized}`,
+     mermaidChart: ({
+       medium,
+       campaign
+diff --git a/src/routes/(app)/edit/+page.svelte b/src/routes/(app)/edit/+page.svelte
+index 6dcde296..a8f51d23 100644
+--- a/src/routes/(app)/edit/+page.svelte
++++ b/src/routes/(app)/edit/+page.svelte
+@@ -1,7 +1,6 @@
+ <script lang="ts">
+   import Actions from '$/components/Actions.svelte';
+   import Card from '$/components/Card/Card.svelte';
+-  import DiagramDocButton from '$/components/DiagramDocumentationButton.svelte';
+   import Editor from '$/components/Editor.svelte';
+   import EnhancedEditsButton from '$/components/EnhancedEditsButton.svelte';
+   import History from '$/components/History/History.svelte';
+@@ -141,9 +140,6 @@
+               tabs={editorTabs}
+               activeTabID={validatedState.current.editorMode}
+               isClosable={false}>
+-              {#snippet actions()}
+-                <DiagramDocButton />
+-              {/snippet}
+               <Editor {isMobile} />
+             </Card>
+ 
