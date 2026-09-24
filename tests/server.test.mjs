@@ -4,6 +4,11 @@ import http from "node:http";
 import { once } from "node:events";
 const seen = [];
 const mock = http.createServer(async (req, res) => {
+  if (req.url === "/edit") {
+    res.writeHead(200, { "Content-Type": "text/html", "Cache-Control": "public, max-age=3600" });
+    res.end("editor");
+    return;
+  }
   if (req.url.startsWith("/svg/")) {
     res.writeHead(200, { "Content-Type": "image/svg+xml" });
     res.end(JSON.stringify({ path: req.url, cookie: req.headers.cookie }));
@@ -21,6 +26,7 @@ mock.listen(0, "127.0.0.1");
 await once(mock, "listening");
 process.env.OLLAMA_ORIGIN = `http://127.0.0.1:${mock.address().port}`;
 process.env.RENDERER_ORIGIN = process.env.OLLAMA_ORIGIN;
+process.env.EDITOR_ORIGIN = process.env.OLLAMA_ORIGIN;
 process.env.PUBLIC_ORIGIN = "https://mermaid.donkeywork.dev";
 const { server } = await import("../server/index.mjs");
 server.listen(0, "127.0.0.1");
@@ -121,4 +127,14 @@ test("image URLs use the configured renderer without forwarding browser cookies"
   assert.match(response.headers.get("content-type"), /image\/svg/);
   assert.deepEqual(await response.json(), { path: "/svg/pako:example?bgColor=white" });
   assert.equal((await fetch(origin + "/render/other")).status, 404);
+});
+
+test("iframe HTML cannot be cached as a standalone editor document", async () => {
+  const response = await fetch(origin + "/edit", {
+    headers: { "Sec-Fetch-Dest": "iframe" },
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.match(response.headers.get("vary"), /Sec-Fetch-Dest/);
+  assert.equal(await response.text(), "editor");
 });

@@ -185,7 +185,14 @@ export const server = http.createServer(async (req, res) => {
         : { ...req.headers, host: target.host },
     },
     (r) => {
-      res.writeHead(r.statusCode || 502, r.headers);
+      const headers = { ...r.headers };
+      // /edit has different document and iframe responses. Never reuse the
+      // iframe HTML for a top-level navigation from the browser's HTTP cache.
+      if (url.pathname === "/edit") {
+        headers["cache-control"] = "no-store";
+        headers.vary = [headers.vary, "Sec-Fetch-Dest"].filter(Boolean).join(", ");
+      }
+      res.writeHead(r.statusCode || 502, headers);
       r.pipe(res);
     },
   );
