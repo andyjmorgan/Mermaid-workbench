@@ -8,7 +8,6 @@ import {
   PanelRightOpen,
   Sun,
   Moon,
-  ExternalLink,
   GitBranch,
   Loader2,
 } from "lucide-react";
@@ -318,17 +317,6 @@ export default function App() {
             onClick={theme}
           >
             {dark ? <Sun /> : <Moon />}
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <a
-              href="/edit"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Open editor on its own"
-            >
-              <ExternalLink />
-              <span className="hidden sm:inline">Editor only</span>
-            </a>
           </Button>
           <Button
             variant="ghost"
