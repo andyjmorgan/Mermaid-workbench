@@ -31,6 +31,6 @@ with sync_playwright() as p:
    page.get_by_role('button',name='Duplicate',exact=True).click()
   duplicate=opened.value
   expect(duplicate.get_by_text('Mermaid workspace',exact=True)).to_be_visible(timeout=30000)
-  expect(duplicate.frame_locator('iframe').locator('#container svg')).to_contain_text('Immediately typed source',timeout=30000)
+  expect(duplicate.frame_locator('iframe').locator('.monaco-editor .view-lines').first).to_contain_text('Immediately typed source',timeout=30000)
   print('PASS',engine,'duplicate retains input immediately before click',flush=True)
   b.close()
