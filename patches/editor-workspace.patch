@@ -1,5 +1,5 @@
 diff --git a/src/lib/components/DesktopEditor.svelte b/src/lib/components/DesktopEditor.svelte
-index b3c52ece..791f883c 100644
+index b3c52ece227ca727fabb316763f41e187b42881e..791f883c62660cbb9161cc66671eb604c70e9bee 100644
 --- a/src/lib/components/DesktopEditor.svelte
 +++ b/src/lib/components/DesktopEditor.svelte
 @@ -58,7 +58,7 @@
@@ -21,7 +21,7 @@ index b3c52ece..791f883c 100644
        top: 0,
        lineNumber
 diff --git a/src/lib/components/MainMenu.svelte b/src/lib/components/MainMenu.svelte
-index c8c08fab..2a1261e3 100644
+index c8c08fab743a05ebc081f4a68cf7011d5a93b847..2a1261e3a2f37d8844b4506983e94eba8ada709b 100644
 --- a/src/lib/components/MainMenu.svelte
 +++ b/src/lib/components/MainMenu.svelte
 @@ -32,61 +32,11 @@
@@ -91,7 +91,7 @@ index c8c08fab..2a1261e3 100644
  
  {#snippet menuItem(options: Omit<MenuItem, 'renderer'>)}
 diff --git a/src/lib/components/Navbar.svelte b/src/lib/components/Navbar.svelte
-index 6d691f7d..d78737ee 100644
+index 6d691f7d0b77b2a874b87e1982ccad05251cfeee..d78737ee713dfef1f936a8b51ec127616153b135 100644
 --- a/src/lib/components/Navbar.svelte
 +++ b/src/lib/components/Navbar.svelte
 @@ -8,16 +8,11 @@
@@ -160,7 +160,7 @@ index 6d691f7d..d78737ee 100644
    </div>
    {@render mobileToggle?.()}
 diff --git a/src/lib/components/Share.svelte b/src/lib/components/Share.svelte
-index a2e27e9a..661532c6 100644
+index a2e27e9a31db19ce913758d3d691d21d642da323..661532c60c89548820833765ce5abc902569ea5c 100644
 --- a/src/lib/components/Share.svelte
 +++ b/src/lib/components/Share.svelte
 @@ -9,7 +9,7 @@
@@ -190,7 +190,7 @@ index a2e27e9a..661532c6 100644
        </div>
        <Separator />
 diff --git a/src/lib/util/state.svelte.ts b/src/lib/util/state.svelte.ts
-index 2ae5b1fc..f495bc67 100644
+index 2ae5b1fcc72c81f581816be7ca2509e8d323deec..f495bc67a2a2554003c677bd62d015a88d69fe92 100644
 --- a/src/lib/util/state.svelte.ts
 +++ b/src/lib/util/state.svelte.ts
 @@ -154,7 +154,8 @@ const urlsCurrent = $derived.by(() => {
@@ -204,7 +204,7 @@ index 2ae5b1fc..f495bc67 100644
        medium,
        campaign
 diff --git a/src/routes/(app)/edit/+page.svelte b/src/routes/(app)/edit/+page.svelte
-index 6dcde296..9a5a376d 100644
+index 6dcde296d94747fa3fc904b0704746291b2b82fd..9a5a376dd1944bf5cd7cdeed41055996f037004a 100644
 --- a/src/routes/(app)/edit/+page.svelte
 +++ b/src/routes/(app)/edit/+page.svelte
 @@ -1,36 +1,26 @@

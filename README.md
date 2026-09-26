@@ -73,3 +73,18 @@ docker build --build-arg MERMAID_IS_ENABLED_MERMAID_CHART_LINKS=false \
 ```
 
 PNG/SVG URL exports and Markdown thumbnails use `/render/img/...` and `/render/svg/...`. Node forwards these to `RENDERER_ORIGIN` (default `http://mermaid-renderer:3000`). The dedicated pinned Mermaid Ink deployment uses gVisor, runs without elevated capabilities, and has no outbound network access. It stores no diagrams or conversations. Local browser downloads still work without the renderer.
+
+## Maintaining the upstream base
+
+Read [AGENTS.md](AGENTS.md) for the complete customization inventory, integration contracts, regression checks, conflict recovery, and deployment workflow. [upstream.json](upstream.json) pins the tested base and build settings.
+
+Recreate the current patched editor without touching your existing checkout:
+
+```sh
+python3 scripts/migrate-upstream.py prepare \
+  --output .upstream/current --build mermaid-editor:workbench
+```
+
+Prepare an upgrade with `prepare --ref <tag-or-sha> --output .upstream/candidate`. After resolving conflicts and passing the documented checks, run `record --checkout .upstream/candidate` to regenerate the patch and update the pin. The script never pushes images or changes the live deployment. Existing output directories are refused.
+
+Run the offline migration regression tests with `python3 tests/migration.py`.

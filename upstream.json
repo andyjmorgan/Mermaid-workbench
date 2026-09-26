@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/mermaid-js/mermaid-live-editor.git",
+  "revision": "e5e2ca41e96c93b30abd4a60c0f2be727019e8bc",
+  "patch": "patches/editor-workspace.patch",
+  "build_args": {
+    "MERMAID_IS_ENABLED_MERMAID_CHART_LINKS": "false",
+    "MERMAID_HIDE_PRIVACY_POLICY": "true",
+    "MERMAID_RENDERER_URL": "https://mermaid.donkeywork.dev/render",
+    "MERMAID_KROKI_RENDERER_URL": ""
+  }
+}
